@@ -6,11 +6,11 @@
 # options(warn = 1)
 # # java heap size
 # options(java.parameters = "-Xmx8G")
-# 
+#
 # # get scripts directory (directory of this file) and load relevant functions
 # args_all = commandArgs(trailingOnly = FALSE)
 # scripts_dir = normalizePath(dirname(sub("^--file=", "", args_all[grep("^--file=", args_all)])))
-# 
+#
 # # enter source statments for functions here once ready
 # source(paste0(scripts_dir, "/load-install-packages.R"))
 # source(paste0(scripts_dir, "/deseq2-pca.R"))
@@ -18,19 +18,19 @@
 # source(paste0(scripts_dir, "/plot-volcano.R"))
 # source(paste0(scripts_dir, "/plot-heatmap.R"))
 
-source('~/Dropbox/Ghedin_Lab/DARPA_Seq/R_files/functions/heatmap-AR.R')
-source('~/Dropbox/Ghedin_Lab/DARPA_Seq/R_files/functions/deseq2_analysis.R')
+source('~/National Institutes of Health/Ghedin, Elodie (NIH NIAID) [E] - LAB_STUFF/allison/projects/DARPA_seq/R_files/flu-DE/heatmap-AR.R')
+source('~/National Institutes of Health/Ghedin, Elodie (NIH NIAID) [E] - LAB_STUFF/allison/projects/DARPA_seq/R_files/flu-DE/deseq2_analysis.R')
 
 # # relevent arguments, only take arguments after the --args flag
 # args = commandArgs(trailingOnly = TRUE)
 # counts_table_file = args[1]
 # col_data_file = args[2]
-# 
+#
 # # check to make sure there are 2 arguments provided
 # if (length(args) < 2) {
 #   stop("Must provide a count table and a metadata file")
 # }
-# 
+#
 # # check that input files exist
 # if (!file.exists(counts_table_file)) stop("file does not exist: ", counts_table_file)
 # if (!file.exists(col_data_file)) stop("file does not exist: ", col_data_file)
@@ -63,8 +63,7 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     # ----------------- Input importing --------------------
 
     # import counts table
-    setwd("~/Dropbox/Ghedin_Lab/DARPA_Seq")
-    counts_table = read.csv(file = glue("./count_Tables/processed_countdata/{count_table}"), row.names = 1, 
+    counts_table = read.csv(file = glue("./{count_table}"), row.names = 1,
                             stringsAsFactors = FALSE, check.names = FALSE)
     message("input counts table gene num:      ", nrow(counts_table))
     message("input counts table sample num:    ", ncol(counts_table))
@@ -72,7 +71,7 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     message("")
 
     # import groups table
-    col_data = read.csv(file = glue("./count_Tables/processed_coldata/{column_data}"), 
+    col_data = read.csv(file = glue("./{column_data}"),
                         header = TRUE, row.names = 1, colClasses = "factor")
     message("metadata row num:   ", nrow(col_data))
     message("metadata condition names: ", toString(rownames(col_data)))
@@ -80,10 +79,10 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     message("")
 
     #readline("Enter file prefix for directory name and saving (note: no spaces): ")
-    if (!dir.exists(glue("~/Dropbox/Ghedin_Lab/DARPA_Seq/DESeq_runs/{r_dir}"))) {
-      dir.create(glue("~/Dropbox/Ghedin_Lab/DARPA_Seq/DESeq_runs/{r_dir}"))
+    if (!dir.exists(glue("./{r_dir}"))) {
+      dir.create(glue("./{r_dir}"))
     }
-    setwd(glue("~/Dropbox/Ghedin_Lab/DARPA_Seq/DESeq_runs/{r_dir}"))
+    setwd(glue("./{r_dir}"))
 
     # check that all samples from the column data are found in the counts table
     diff_samples = setdiff(rownames(col_data), colnames(counts_table))
@@ -111,7 +110,7 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     message("group levels: ", toString(group_levels))
     message("secondary group levels: ", toString(gb_levels))
     message("")
-  
+
     contrast <- c(group_a, toString(group_levels[2]), toString(group_levels[1]))
 
     # design formula - what should DESeq ultimately compare between?
@@ -133,24 +132,24 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     vsd = varianceStabilizingTransformation(dds, blind = TRUE)
 
     # export normalized counts
-    norm_counts = counts(dds, normalized = TRUE) %>% 
-      round(2) %>% 
-      as.data.frame() %>% 
+    norm_counts = counts(dds, normalized = TRUE) %>%
+      round(2) %>%
+      as.data.frame() %>%
       rownames_to_column("gene")
     write_excel_csv(norm_counts, glue("{r_dir}_normcounts.csv"))
     write_xlsx(list(normalized_counts = norm_counts), path = glue("{r_dir}_normcounts.xlsx"))
 
     # export variance stabilized counts
-    vsd_table = assay(vsd) %>% 
-      round(2) %>% 
-      as.data.frame() %>% 
+    vsd_table = assay(vsd) %>%
+      round(2) %>%
+      as.data.frame() %>%
       rownames_to_column("gene")
     write_excel_csv(vsd_table, path = glue("{r_dir}_vstcounts.csv"))
 
     # ----------------------- PCA ------------------------
 
     # PCA plot
-    source('~/Dropbox/Ghedin_Lab/DARPA_Seq/R_files/functions/deseq2-pca.R')
+    source('~/National Institutes of Health/Ghedin, Elodie (NIH NIAID) [E] - LAB_STUFF/allison/projects/DARPA_seq/R_files/flu-DE/deseq2-pca.R')
     pca_plot = deseq2_pca(vsd, intgroup = c(group_a, group_b), ntop = 1000)
     save_plot(glue("{r_dir}_pca.pdf"), pca_plot, base_width = 8, base_height = 5, units = "in", dpi = 300)
     save_plot(glue("{r_dir}_pca.png"), pca_plot, base_width = 8, base_height = 5, units = "in", dpi = 300)
@@ -159,7 +158,7 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     # ---------------differential expression------------------
 
     # perform comparisons for all results in the results table
-    source('~/Dropbox/Ghedin_Lab/DARPA_Seq/R_files/functions/deseq2_analysis.R')
+    source('~/National Institutes of Health/Ghedin, Elodie (NIH NIAID) [E] - LAB_STUFF/allison/projects/DARPA_seq/R_files/flu-DE/deseq2_analysis.R')
     res_names <- as.list(resultsNames(dds))
     res_names <- res_names[-c(1)]
     for (result in seq_along(res_names)) {
@@ -167,7 +166,7 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
       message(glue("Comparison: ", res))
       deseq2_analysis(deseq_data = dds, name = res_names[[result]], contrast = contrast, save_plot = TRUE)
     }
-    
+
     if (returnDDS == TRUE) {
         return(dds)
     }
