@@ -59,14 +59,14 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir, ...
   file_suffix = gsub(pattern = "_vs_Mock", replacement = "", x = file_suffix)
 
   # save unmodified results object
-  res_rds = glue("{r_dir}/deseq2_res_{file_suffix}.rds")
-  saveRDS(res, file = res_rds)
+  res_rds = glue("deseq2_res_{file_suffix}.rds")
+  saveRDS(res, file = glue("{r_dir}/{res_rds}"))
   message("saving results object: ", res_rds)
 
   # save unmodified results as csv
   res_df <- as.data.frame(res) %>% rownames_to_column("gene")
-  res_csv <- glue("res_{file_suffix}.csv")
-  write_excel_csv(res_df, path = glue("{r_dir}/res_csv"))
+  res_csv <- glue("{file_suffix}_res.csv")
+  write_excel_csv(res_df, path = glue("{r_dir}/{res_csv}"))
   message("saving results csv: ", res_csv)
 
   # format results and save as excel spreadsheet
@@ -85,7 +85,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir, ...
       dplyr::select(gene, baseMean, log2FC, pvalue, padj)
 
     res_xlsx <- glue("{file_suffix}_res.xlsx")
-    write_xlsx(setNames(list(res_df), strtrim(res_name, 31)), path = glue("{r_dir}/res_csv"))
+    write_xlsx(setNames(list(res_df), strtrim(res_name, 31)), path = glue("{r_dir}/{res_xlsx}"))
     message("saving results as excel file: ", res_xlsx)
 
     # generate volcano plot
@@ -109,7 +109,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir, ...
     # save differential expression results in Excel format
     res_q005_xlsx <- gsub(pattern = ".xlsx", replacement = "_q005.xlsx", x = res_xlsx)
     res_q005_df <- subset(res_df, padj < 0.05)
-    write_xlsx(setNames(list(res_q005_df), strtrim(res_name, 31)), path = glue("{r_dir}/res_q005_xlsx")
+    write_xlsx(setNames(list(res_q005_df), strtrim(res_name, 31)), path = glue("{r_dir}/{res_q005_xlsx}"))
     message("saving DE genes results as excel file: ", res_q005_xlsx)
 
     # perform vst on data for use in heatmap

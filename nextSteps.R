@@ -27,7 +27,7 @@ nextSteps <- function(r_dir, virus=NULL) {
     library("pheatmap")
 
     # set the working director to the input above where the results tables are
-    setwd(glue("./{r_dir}"))
+    # setwd(glue("./{r_dir}"))
 
     # file_prefixes stores the virus names which are the names that the res tables are saved under
     file_prefixes <- c("FluB","H1N1pdm09", "H3N2",
@@ -44,14 +44,14 @@ nextSteps <- function(r_dir, virus=NULL) {
     # Load in the full res_tables for each of the viruses indicated
     res_tables <- list()
     for (strain in file_prefixes) {
-        res_tables[[length(res_tables) + 1]] <- as.data.frame(read_excel(glue("./{strain}_res.xlsx")))
+        res_tables[[length(res_tables) + 1]] <- as.data.frame(read_excel(glue("./{r_dir}/{strain}_res.xlsx")))
     }
     names(res_tables) <- file_prefixes
 
     # Load in the q > 005 tables for the viruses indicated
     q_tables <- list()
     for (strain in file_prefixes) {
-        q_tables[[length(q_tables) + 1]] <- as.data.frame(read_excel(glue("./{strain}_res_q005.xlsx")))
+        q_tables[[length(q_tables) + 1]] <- as.data.frame(read_excel(glue("./{r_dir}/{strain}_res_q005.xlsx")))
     }
     names(q_tables) <- file_prefixes
 
