@@ -102,7 +102,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
                  fc_label = "Fold Change (log2)", p_label = "Adjusted P Value (-log10)",
                  title = res_name,
                  file_prefix = glue("{volcano_dir}/plot.volcano2.{file_suffix}"))
-    
+
     message("# genes padj < 0.1: ", nrow(subset(res_df, padj < 0.1)))
     message("# genes padj < 0.05: ", nrow(subset(res_df, padj < 0.05)))
     message("# genes padj < 0.01: ", nrow(subset(res_df, padj < 0.01)))
@@ -125,6 +125,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
     hmg[[length(hmg) + 1]] = list(genes = res_df %>% dplyr::filter(padj < 0.05) %>% .$gene,
                                   title = "q < 0.05",
                                   file_suffix = "q005")
+    message("list generated for q < 0.05: ", length(hmg[[length(hmg)]]))
     hmg[[length(hmg) + 1]] = list(genes = res_df %>% dplyr::filter(padj < 0.01) %>% .$gene,
                                   title = "q < 0.01",
                                   file_suffix = "q001")
