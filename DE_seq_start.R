@@ -82,7 +82,6 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     if (!dir.exists(glue("./{r_dir}"))) {
       dir.create(glue("./{r_dir}"))
     }
-    setwd(glue("./{r_dir}"))
 
     # check that all samples from the column data are found in the counts table
     diff_samples = setdiff(rownames(col_data), colnames(counts_table))
@@ -136,23 +135,23 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
       round(2) %>%
       as.data.frame() %>%
       rownames_to_column("gene")
-    write_excel_csv(norm_counts, glue("{r_dir}_normcounts.csv"))
-    write_xlsx(list(normalized_counts = norm_counts), path = glue("{r_dir}_normcounts.xlsx"))
+    write_excel_csv(norm_counts, glue("{r_dir}/{r_dir}_normcounts.csv"))
+    write_xlsx(list(normalized_counts = norm_counts), path = glue("{r_dir}/{r_dir}_normcounts.xlsx"))
 
     # export variance stabilized counts
     vsd_table = assay(vsd) %>%
       round(2) %>%
       as.data.frame() %>%
       rownames_to_column("gene")
-    write_excel_csv(vsd_table, path = glue("{r_dir}_vstcounts.csv"))
+    write_excel_csv(vsd_table, path = glue("{r_dir}/{r_dir}_vstcounts.csv"))
 
     # ----------------------- PCA ------------------------
 
     # PCA plot
     source('~/National Institutes of Health/Ghedin, Elodie (NIH NIAID) [E] - LAB_STUFF/allison/projects/DARPA_seq/R_files/flu-DE/deseq2-pca.R')
     pca_plot = deseq2_pca(vsd, intgroup = c(group_a, group_b), ntop = 1000)
-    save_plot(glue("{r_dir}_pca.pdf"), pca_plot, base_width = 8, base_height = 5, units = "in", dpi = 300)
-    save_plot(glue("{r_dir}_pca.png"), pca_plot, base_width = 8, base_height = 5, units = "in", dpi = 300)
+    save_plot(glue("{r_dir}/{r_dir}_pca.pdf"), pca_plot, base_width = 8, base_height = 5, units = "in", dpi = 300)
+    save_plot(glue("{r_dir}/{r_dir}_pca.png"), pca_plot, base_width = 8, base_height = 5, units = "in", dpi = 300)
     message("Saving pca plot")
 
     # ---------------differential expression------------------
@@ -164,7 +163,7 @@ deseq_start <- function(count_table, column_data, r_dir, group_1 = 1, group_2 = 
     for (result in seq_along(res_names)) {
       res <- gsub(pattern = "Virus_", replacement = "", x = res_names[[result]])
       message(glue("Comparison: ", res))
-      deseq2_analysis(deseq_data = dds, name = res_names[[result]], contrast = contrast, save_plot = TRUE)
+      deseq2_analysis(deseq_data = dds, name = res_names[[result]], contrast = contrast, r_dir = r_dir, save_plot = TRUE)
     }
 
     if (returnDDS == TRUE) {

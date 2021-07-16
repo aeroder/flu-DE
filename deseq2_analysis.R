@@ -1,5 +1,5 @@
 
-deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NULL, ...) {
+deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir, ...) {
 
   # For DESeq2 analysis
   library("DESeq2")
@@ -21,11 +21,9 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
   library("pheatmap")
 
   # create a directory to store the output files
-  r_dir <- getwd()
+  # r_dir <- getwd()
   if(!is.null(r_dir)) {
     if (!dir.exists(r_dir)) dir.create(r_dir)
-  } else {
-    r_dir <- getwd()
   }
 
   # Make a directory to store heatmaps in
@@ -68,7 +66,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
   # save unmodified results as csv
   res_df <- as.data.frame(res) %>% rownames_to_column("gene")
   res_csv <- glue("res_{file_suffix}.csv")
-  write_excel_csv(res_df, path = res_csv)
+  write_excel_csv(res_df, path = glue("{r_dir}/res_csv"))
   message("saving results csv: ", res_csv)
 
   # format results and save as excel spreadsheet
@@ -87,7 +85,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
       dplyr::select(gene, baseMean, log2FC, pvalue, padj)
 
     res_xlsx <- glue("{file_suffix}_res.xlsx")
-    write_xlsx(setNames(list(res_df), strtrim(res_name, 31)), path = res_xlsx)
+    write_xlsx(setNames(list(res_df), strtrim(res_name, 31)), path = glue("{r_dir}/res_csv"))
     message("saving results as excel file: ", res_xlsx)
 
     # generate volcano plot
@@ -101,7 +99,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
                  p_cutoff = 0.05,
                  fc_label = "Fold Change (log2)", p_label = "Adjusted P Value (-log10)",
                  title = res_name,
-                 file_prefix = glue("{volcano_dir}/plot.volcano2.{file_suffix}"))
+                 file_prefix = glue("{r_dir}/{volcano_dir}/plot.volcano2.{file_suffix}"))
 
     message("# genes padj < 0.1: ", nrow(subset(res_df, padj < 0.1)))
     message("# genes padj < 0.05: ", nrow(subset(res_df, padj < 0.05)))
@@ -111,7 +109,7 @@ deseq2_analysis <- function(deseq_data, contrast = NULL, name = NULL, r_dir = NU
     # save differential expression results in Excel format
     res_q005_xlsx <- gsub(pattern = ".xlsx", replacement = "_q005.xlsx", x = res_xlsx)
     res_q005_df <- subset(res_df, padj < 0.05)
-    write_xlsx(setNames(list(res_q005_df), strtrim(res_name, 31)), path = res_q005_xlsx)
+    write_xlsx(setNames(list(res_q005_df), strtrim(res_name, 31)), path = glue("{r_dir}/res_q005_xlsx")
     message("saving DE genes results as excel file: ", res_q005_xlsx)
 
     # perform vst on data for use in heatmap
